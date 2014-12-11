@@ -4,7 +4,8 @@
 #include <iomanip>
 #include <psapi.h>
 
-#define USE_STRING_DESPITE_TCHAR
+// in some cases TCHAR could be replaced with string if we use USE_STRING_INSTEADOF_TCHAR
+#define USE_STRING_INSTEADOF_TCHAR
 
 /*
 	update.txt
@@ -26,7 +27,7 @@ void OnProcessStopped(Process const*);
 void OnProcessResumed(Process const*);
 void OpenProcessById();
 
-#ifdef USE_STRING_DESPITE_TCHAR
+#ifdef USE_STRING_INSTEADOF_TCHAR
 void printUpdate(string);
 #else
 void printUpdate(TCHAR *);
@@ -104,7 +105,7 @@ INT main(INT argc, TCHAR ** argv)
 	while (bMenu)
 	{
 		gScaner = read_action;
-#ifdef USE_STRING_DESPITE_TCHAR
+#ifdef USE_STRING_INSTEADOF_TCHAR
 		printUpdate(string(""));
 #else
 		printUpdate(NULL);
@@ -116,7 +117,7 @@ INT main(INT argc, TCHAR ** argv)
 		*	"[0-9]+" - regular expression (positive numbers only)
 		*/
 
-#ifdef USE_STRING_DESPITE_TCHAR
+#ifdef USE_STRING_INSTEADOF_TCHAR
 		DWORD iAction = stoi(incoming_data("Action", "[0-9]+"));
 #else
 		char * pAction = incoming_data("Action", "[0-9]+");
@@ -180,7 +181,7 @@ INT main(INT argc, TCHAR ** argv)
 }
 
 
-#ifdef USE_STRING_DESPITE_TCHAR
+#ifdef USE_STRING_INSTEADOF_TCHAR
 void OpenProcessById()
 {
 	/*
@@ -275,7 +276,7 @@ void OpenProcessById()
 }
 #endif
 
-#ifdef USE_STRING_DESPITE_TCHAR
+#ifdef USE_STRING_INSTEADOF_TCHAR
 void printUpdate(string helpingString){
 #else
 void printUpdate(TCHAR * helpingString){
@@ -293,7 +294,7 @@ void printUpdate(TCHAR * helpingString){
 	cout << "0. Exit Program" << endl << endl;
 
 	// If we want to display helping information
-#ifdef USE_STRING_DESPITE_TCHAR
+#ifdef USE_STRING_INSTEADOF_TCHAR
 	if (helpingString.length())
 #else
 	if (helpingString != NULL)
@@ -316,7 +317,7 @@ void OnProcessStarted(Process const* process)
 {
 	EnterCriticalSection(&g_coutAccess);
 
-#ifdef USE_STRING_DESPITE_TCHAR
+#ifdef USE_STRING_INSTEADOF_TCHAR
 	printUpdate(string(""));
 #else
 	printUpdate(NULL);
@@ -331,7 +332,7 @@ void OnProcessRestart(Process const* process)
 {
 	EnterCriticalSection(&g_coutAccess);
 
-#ifdef USE_STRING_DESPITE_TCHAR
+#ifdef USE_STRING_INSTEADOF_TCHAR
 	printUpdate(string(""));
 #else
 	printUpdate(NULL);

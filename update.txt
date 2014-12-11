@@ -22,8 +22,8 @@ Rewritten:
 	
 Added:
 
-	#define USE_STRING_DESPITE_TCHAR
-	- in some cases TCHAR could be replaced with string if we use USE_STRING_DESPITE_TCHAR
+	#define USE_STRING_INSTEADOF_TCHAR
+	- in some cases TCHAR could be replaced with string if we use USE_STRING_INSTEADOF_TCHAR
 	- examples in such functions as:
 		- incoming_data (functions.h)
 		- printUpdate

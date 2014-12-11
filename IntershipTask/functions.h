@@ -161,7 +161,7 @@ HANDLE GetThreadByID(DWORD processId)
 }
 
 // Reading data from keyboard
-#ifdef USE_STRING_DESPITE_TCHAR
+#ifdef USE_STRING_INSTEADOF_TCHAR
 string incoming_data(TCHAR *info, TCHAR *_pattern)
 {
 	BOOL is_correct = FALSE, is_first = TRUE;
