@@ -1,0 +1,14 @@
+L 12/11/2014 - 20:10:36: Program started!
+L 12/11/2014 - 20:10:38: Process [ id: 6336 | name: notepad.exe] has been suspended!
+L 12/11/2014 - 20:10:40: Process [ id: 6336 | name: notepad.exe] has been resumed!
+L 12/11/2014 - 20:10:42: process [ id: 6336 | name: notepad.exe] is restarting!
+L 12/11/2014 - 20:10:42: Process [ id: 6336 ] exited!
+L 12/11/2014 - 20:10:42: Process [ id: 3632 | name: notepad.exe] started!
+L 12/11/2014 - 20:10:44: process [ id: 3632 | name: notepad.exe] is restarting!
+L 12/11/2014 - 20:10:44: Process [ id: 3632 ] exited!
+L 12/11/2014 - 20:10:44: Process [ id: 6460 | name: notepad.exe] started!
+L 12/11/2014 - 20:10:53 <DEBUG>: Couldn't open a process [ id: 5 ]
+L 12/11/2014 - 20:10:55 <DEBUG>: Couldn't open a process [ id: 15 ]
+L 12/11/2014 - 20:10:57 <DEBUG>: Couldn't open a process [ id: 25 ]
+L 12/11/2014 - 20:11:02: Process [ id: 6460 ] exited!
+L 12/11/2014 - 20:11:03: Program finished!

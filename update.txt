@@ -1,0 +1,33 @@
+12/11/2014
+
+Created new functions:
+
+	void OpenProcessById(){}
+	- reads process id
+	- opens process 
+	
+	HANDLE GetThreadByID(DWORD processId){}
+	- takes real process id
+	- opens thread of the process
+	- returns this thread
+	
+	string getStringByPointer(TCHAR * _str){}
+	- takes a TCHAR pointer, and deallocates the memory block pointed by _str
+	- returns string
+	
+Rewritten:
+	
+	ostream & operator<<(ostream & stream, const Process * Obj)
+	- TCHAR replaced with string
+	
+Added:
+
+	#define USE_STRING_DESPITE_TCHAR
+	- in some cases TCHAR could be replaced with string if we use USE_STRING_DESPITE_TCHAR
+	- examples in such functions as:
+		- incoming_data (functions.h)
+		- printUpdate
+		- OpenProcessById
+		- OnProcessStarted
+		- OnProcessRestart
+		- OnProcessResumed
