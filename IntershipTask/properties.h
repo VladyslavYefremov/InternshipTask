@@ -1,7 +1,6 @@
 #ifndef _PROPERTIES
 #define _PROPERTIES
 
-//#define default_process "C:\\Program Files (x86)\\Notepad++\\notepad++.exe"
 #define default_process "C:\\Windows\\System32\\notepad.exe"
 
 // Status of a process

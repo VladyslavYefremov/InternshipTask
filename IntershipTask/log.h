@@ -7,6 +7,12 @@
 #include <memory>
 #include <mutex>
 
+/*
+*	A Lightweight Logger
+*	source: http://www.drdobbs.com/cpp/a-lightweight-logger-for-c/240147505?pgno=1
+*	I've only changed displaying information and added 4th type of `severity_type`
+*/
+
 namespace logging {
 
 	class log_policy_interface

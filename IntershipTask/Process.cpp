@@ -1,34 +1,35 @@
 #include "Process.h"
 
-Process::Process() : hProcess(NULL),
-					hThread(NULL),
-					hWait(NULL),
-					exitCallback(NULL),
-					stoppedCallback(NULL),
-					startCallback(NULL),
-					restartCallback(NULL),
-					resumedCallback(NULL),
+Process::Process() : hProcess(nullptr),
+					hThread(nullptr),
+					hWait(nullptr),
+					exitCallback(nullptr),
+					stoppedCallback(nullptr),
+					startCallback(nullptr),
+					restartCallback(nullptr),
+					resumedCallback(nullptr),
 					id(0){}
 
-Process::Process(TCHAR * _szCmdLine) : hProcess(NULL),
-					hThread(NULL),
-					hWait(NULL),
-					exitCallback(NULL),
-					stoppedCallback(NULL),
-					startCallback(NULL),
-					restartCallback(NULL),
-					resumedCallback(NULL),
+Process::Process(TCHAR * _szCmdLine) : hProcess(nullptr),
+					hThread(nullptr),
+					hWait(nullptr),
+					exitCallback(nullptr),
+					stoppedCallback(nullptr),
+					startCallback(nullptr),
+					restartCallback(nullptr),
+					resumedCallback(nullptr),
 					id(0)
 {
 	Create(_szCmdLine);
 }
 
-
+/* destructor */
 Process::~Process()
 {
 	DestroyProcess();
 }
 
+/* function creates new process using command line */
 BOOL Process::Create(TCHAR * _szCmdLine)
 {
 
@@ -53,24 +54,24 @@ BOOL Process::Create(TCHAR * _szCmdLine)
 		hThread = pi.hThread;	// Save the thread handle	
 		id = pi.dwProcessId;	// Save the process id
 
-		// Remember the command line of the process
+		/* remember the command line of the process */
 		szCmdLine = new TCHAR[strlen(_szCmdLine) + 1];
 		strcpy_s(szCmdLine, strlen(szCmdLine) + 1, _szCmdLine);
 
-		// Call 'process started'
+		/* calls 'process started' */
 		OnStarted();
 	}
 
 	return bProcessCreated;
 }
 
-//	Method starts watching for new process, opened by its id
-BOOL Process::Create(DWORD _id)
+/* function opens an existing process using its id */
+BOOL Process::Open(DWORD _id)
 {
-	// local
+	/* buffering variable */
 	HANDLE lhProcess = OpenProcess(PROCESS_ALL_ACCESS, false, _id);
 
-	if (lhProcess != NULL)
+	if (lhProcess != nullptr)
 	{
 		if (hProcess)
 			DestroyProcess();
@@ -95,7 +96,7 @@ BOOL Process::Create(DWORD _id)
 	return FALSE;
 }
 
-// Resumes the process
+/* resumes the process */
 BOOL Process::Resume()
 {
 	if (ResumeThread(hThread)){
@@ -105,7 +106,7 @@ BOOL Process::Resume()
 	return FALSE;
 }
 
-// Stops the process
+/* stopss the process */
 BOOL Process::Stop()
 {
 	if (SuspendThread(hThread) < 1){
@@ -115,30 +116,31 @@ BOOL Process::Stop()
 	return FALSE;
 }
 
-// Destroys the process
+/* destroys the process */
 BOOL Process::DestroyProcess() {
 	if (hThread) {
 		CloseHandle(hThread);
 	}
 
-	// Unregister Wait
+	/* unregister wait */
 	if (hWait)
 	{
-		// INVALID_HANDLE_VALUE means "Wait for pending callbacks"
-		::UnregisterWaitEx(hWait, INVALID_HANDLE_VALUE);
+		::UnregisterWaitEx(hWait, INVALID_HANDLE_VALUE);	// INVALID_HANDLE_VALUE means "Wait for pending callbacks"
 		hWait = NULL;
 	}
 
 	if (hProcess)
 	{
-		//	Call 'process exited'
-		//	param. TRUE means - not restart process by its command line
+		/* 
+		*	Call 'process exited'
+		*	param. TRUE means - not restart process by its command line
+		*/
 		OnExited(TRUE);
 
 		DWORD code;
 		if (GetExitCodeProcess(hProcess, &code))
 		{
-			// If the process is still alive - terminate it
+			/* if the process is still alive, terminate it */
 			if (code == STILL_ACTIVE) {
 				TerminateProcess(hProcess, 0);
 			}
@@ -147,35 +149,35 @@ BOOL Process::DestroyProcess() {
 	}
 
 	id = NULL;
-	hProcess = NULL;
-	hThread = NULL;
-	iStatus = PROC_TERMINATED;
+	hProcess = nullptr;
+	hThread = nullptr;
+	iState = PROC_TERMINATED;
 
 	return TRUE;
 }
 
-// Restarts the process
+/* restarts the process */
 BOOL Process::Restart()
 {
-	if (hProcess == NULL)
+	if (hProcess == nullptr)
 		return FALSE;
 
-	// Call 'process is restarting'
+	/* Call 'process is restarting' */
 	OnRestart();
 
-	// Remember the command line
+	/* remembers the command line */
 	DWORD iLen = strlen(szCmdLine), _id = id;
 	TCHAR * buffer = new TCHAR[iLen + 1];
 	strcpy_s(buffer, iLen + 1, szCmdLine);
 
-	// Destroy current process
+	/* destroy current process */
 	DestroyProcess();
 
-	// If we have the command line - create new process
+	/* if we have the command line, create new process */
 	if (iLen){
-		// Create new process (using command line)
+		/*  create new process (using command line) */
 		Create(buffer);
-		// Re-registration of 'exit' callback
+		/* re-registration of 'exit' callback */
 		RegisterExitCallback(exitCallback);
 		return TRUE;
 	}
@@ -185,18 +187,19 @@ BOOL Process::Restart()
 	return FALSE;
 }
 
-// Registers 'exit' callback
+/* function registers `exit` callback */
 BOOL Process::RegisterExitCallback(ProcessCallback callback)
 {
-	if (!callback) return FALSE;
+	if (!callback) 
+		return FALSE;
 
 	exitCallback = callback;
 
-	// Directs a wait thread in the thread pool to wait on the object.
+	/* directs a wait thread in the thread pool to wait on the object */
 	return RegisterWaitForSingleObject(&hWait, hProcess, OnExited, this, INFINITE, WT_EXECUTEONLYONCE);
 }
 
-// Registers 'started' callback
+/* function registers `started` callback */
 BOOL Process::RegisterStartedCallback(ProcessCallback callback)
 {
 	if (!callback)
@@ -209,7 +212,7 @@ BOOL Process::RegisterStartedCallback(ProcessCallback callback)
 	return TRUE;
 }
 
-// Registers 'is restarting' callback
+/* function registers `restarting` callback */
 BOOL Process::RegisterRestartCallback(ProcessCallback callback)
 {
 	if (!callback)
@@ -222,7 +225,7 @@ BOOL Process::RegisterRestartCallback(ProcessCallback callback)
 	return TRUE;
 }
 
-// Registers 'stopped' callback
+/* function registers `stopped` callback */
 BOOL Process::RegisterStoppedCallback(ProcessCallback callback)
 {
 	if (!callback)
@@ -235,7 +238,7 @@ BOOL Process::RegisterStoppedCallback(ProcessCallback callback)
 	return TRUE;
 }
 
-// Registers 'resumed' callback
+/* function registers `resumed` callback */
 BOOL Process::RegisterResumedCallback(ProcessCallback callback)
 {
 	if (!callback)
@@ -248,27 +251,35 @@ BOOL Process::RegisterResumedCallback(ProcessCallback callback)
 	return TRUE;
 }
 
-BYTE	Process::getStatus()			const { return iStatus; }
+/* function returns the state of the process */
+BYTE	Process::getState()			const { return iState; }
+
+/* function returns the id of the process */
 DWORD	Process::getId()				const { return id; }
+
+/* function returns the handle of the process */
 HANDLE	Process::getHandle()			const { return hProcess; }
+
+/* function returns pointer to the command line of the process (if it exists. else - ptr to msg) */
 TCHAR *	Process::getCommandLine()		const 
 { 
-	if (szCmdLine != NULL && strlen(szCmdLine))
+	if (szCmdLine != nullptr && strlen(szCmdLine))
 		return szCmdLine; 
 
 	return "< cannot get a commang line >";
 }
 
+/* function returns pointer to the name of the process (if it exists. else - nullptr) */
 TCHAR *	Process::getProcessName()		const
 {
-	if (hProcess != NULL)
+	if (hProcess != nullptr)
 		return GetNameByHandle(hProcess);
 
-	return NULL;
+	return nullptr;
 }
 
 /*
-Private methods!
+	Private methods!
 */
 
 void Process::OnExited(BOOL _dont_restart)
@@ -276,8 +287,8 @@ void Process::OnExited(BOOL _dont_restart)
 	if (exitCallback)
 		exitCallback(this);
 
-	// Restart the process 
-	if (szCmdLine!= NULL && strlen(szCmdLine) && !_dont_restart){
+	/* let's resturt the process */
+	if (szCmdLine != nullptr && strlen(szCmdLine) && !_dont_restart){
 		Create(szCmdLine);
 		RegisterExitCallback(exitCallback);
 	}
@@ -285,7 +296,7 @@ void Process::OnExited(BOOL _dont_restart)
 
 void Process::OnStarted()
 {
-	iStatus = PROC_WORKING;
+	iState = PROC_WORKING;
 
 	if (startCallback)
 		startCallback(this);
@@ -293,7 +304,7 @@ void Process::OnStarted()
 
 void Process::OnRestart()
 {
-	iStatus = PROC_RESTARTING;
+	iState = PROC_RESTARTING;
 
 	if (restartCallback)
 		restartCallback(this);
@@ -301,7 +312,7 @@ void Process::OnRestart()
 
 void Process::OnStopped()
 {
-	iStatus = PROC_STOPPED;
+	iState = PROC_STOPPED;
 
 	if (stoppedCallback)
 		stoppedCallback(this);
@@ -309,7 +320,7 @@ void Process::OnStopped()
 
 void Process::OnResumed()
 {
-	iStatus = PROC_WORKING;
+	iState = PROC_WORKING;
 
 	if (resumedCallback)
 		resumedCallback(this);

@@ -6,6 +6,8 @@
 #ifdef LOG_FILE
 static logging::logger< logging::file_log_policy > log_inst(LOG_FILE);
 #else
+
+/* function forms the name of log-file */
 std::string getNameByDate()
 {
 	std::ostringstream stringStream;
@@ -20,6 +22,7 @@ std::string getNameByDate()
 		<< ".log";
 
 	delete currentTime;
+
 	return stringStream.str();
 }
 

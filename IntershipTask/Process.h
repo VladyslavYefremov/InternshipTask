@@ -24,7 +24,7 @@ public:
 	~Process();
 
 	BOOL Create(TCHAR *);
-	BOOL Create(DWORD);
+	BOOL Open(DWORD);
 
 	BOOL Stop();
 	BOOL Resume();
@@ -38,7 +38,7 @@ public:
 	BOOL RegisterResumedCallback(ProcessCallback);
 
 	DWORD	getId()				const;
-	BYTE	getStatus()			const;
+	BYTE	getState()			const;
 	HANDLE	getHandle()			const;
 	TCHAR *	getCommandLine()	const;
 	TCHAR * getProcessName()	const;
@@ -58,7 +58,7 @@ private:
 
 	TCHAR *				szCmdLine;
 	DWORD				id;
-	BYTE				iStatus;
+	BYTE				iState;
 	HANDLE				hProcess;
 	HANDLE				hThread;
 	HANDLE				hWait;

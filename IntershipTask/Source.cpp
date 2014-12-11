@@ -4,12 +4,17 @@
 #include <iomanip>
 #include <psapi.h>
 
-// in some cases TCHAR could be replaced with string if we use USE_STRING_INSTEADOF_TCHAR
-#define USE_STRING_INSTEADOF_TCHAR
-
 /*
-	update.txt
+*	comment #define USE_STRING_INSTEADOF_TCHAR if you want to use TCHAR in sucn function as:
+*
+*		- incoming_data (functions.h)
+*		- printUpdate
+*		- OpenProcessById
+*		- OnProcessStarted
+*		- OnProcessRestart
+*		- OnProcessResumed
 */
+#define USE_STRING_INSTEADOF_TCHAR
 
 #include "Process.h"
 #include "functions.h"
@@ -33,8 +38,12 @@ void printUpdate(string);
 void printUpdate(TCHAR *);
 #endif
 
+
+/* pointer to the object of our class */
+Process * gCurrentProcess = nullptr;
+
+/* critical section object */
 CRITICAL_SECTION g_coutAccess;
-Process * gCurrentProcess;
 
 /*		Scanner type
 *
@@ -59,37 +68,40 @@ INT main(INT argc, TCHAR ** argv)
 
 	LOG("Program started!");
 
-	// Creation of new process;
-	// default_process: command line of a process
+	/*
+	*	Creation of new process;
+	*	default_process: command line of a process
+	*/
 	gCurrentProcess = new Process(default_process);
 
-	if (gCurrentProcess->getHandle() != NULL)
+	/* if created new process */
+	if (gCurrentProcess->getHandle() != nullptr)
 	{
-		// Register event - process started
+		/* register event - process started */
 		if (!gCurrentProcess->RegisterStartedCallback(OnProcessStarted)){
 			LOG_ERR("failed to register 'started' callback! [", ERROR_REGISTER_CALLBACK_STARTED, "]");
 			return ERROR_REGISTER_CALLBACK_STARTED;
 		}
 
-		// Register event - process restart (pre)
+		/* register event - process restart (pre) */
 		if (!gCurrentProcess->RegisterRestartCallback(OnProcessRestart)){
 			LOG_ERR("failed to register 'restart' callback! [", ERROR_REGISTER_CALLBACK_RESTART, "]");
 			return ERROR_REGISTER_CALLBACK_RESTART;
 		}
 
-		// Register event - process stopped
+		/* register event - process stopped */
 		if (!gCurrentProcess->RegisterStoppedCallback(OnProcessStopped)){
 			LOG_ERR("failed to register 'stopped' callback! [", ERROR_REGISTER_CALLBACK_STOPPED, "]");
 			return ERROR_REGISTER_CALLBACK_STOPPED;
 		}
 
-		// Register event - process resumed
+		/* register event - process resumed */
 		if (!gCurrentProcess->RegisterResumedCallback(OnProcessResumed)){
 			LOG_ERR("failed to register 'resumed' callback! [", ERROR_REGISTER_CALLBACK_RESUMED, "]");
 			return ERROR_REGISTER_CALLBACK_RESUMED;
 		}
 
-		// Register event - process exited
+		/* register event - process exited */
 		if (!gCurrentProcess->RegisterExitCallback(OnProcessExited)){
 			LOG_ERR("failed to register 'exit' callback! [", ERROR_REGISTER_CALLBACK_EXIT, "]");
 			return ERROR_REGISTER_CALLBACK_EXIT;
@@ -101,10 +113,13 @@ INT main(INT argc, TCHAR ** argv)
 
 	BOOL bMenu = TRUE;
 
-	// Create Menu
+	/* starts menu */
 	while (bMenu)
 	{
+		/* prepare to getting item number in the menu */
 		gScaner = read_action;
+
+		/* updates console window */
 #ifdef USE_STRING_INSTEADOF_TCHAR
 		printUpdate(string(""));
 #else
@@ -112,8 +127,8 @@ INT main(INT argc, TCHAR ** argv)
 #endif
 
 		/*
-		*	Get menu item
-		*	"Action" - reading word
+		*	get item number in the menu
+		*	"Action" - word  describing the read information
 		*	"[0-9]+" - regular expression (positive numbers only)
 		*/
 
@@ -129,17 +144,17 @@ INT main(INT argc, TCHAR ** argv)
 
 		switch (iAction) {
 		case 1:
-			//Stop the process
+			/* stop the process */
 			gCurrentProcess->Stop();
 			break;
 
 		case 2:
-			//Resume the process
+			/* resume the process */
 			gCurrentProcess->Resume();
 			break;
 
 		case 3:
-			//Restart the process
+			/* restart the process */
 			gCurrentProcess->Restart();
 			break;
 
@@ -158,17 +173,17 @@ INT main(INT argc, TCHAR ** argv)
 			break;
 
 		case 5:
-			// Read id & open process
+			/* read id and open a process */
 			OpenProcessById();
 			break;
 
 		case 6:
-			//Destroy the process
+			/* destroy the process */
 			gCurrentProcess->DestroyProcess();
 			break;
 
 		default:
-			//Exit the menu
+			/* exit the menu */
 			bMenu = FALSE;
 
 		}
@@ -204,7 +219,7 @@ void OpenProcessById()
 		_id = stoi(incoming_data("Input a process name (-1 to go back)", "-?[0-9]+"));
 
 		// can't open a process by id
-		if (_id > 0 && !gCurrentProcess->Create(_id)){
+		if (_id > 0 && !gCurrentProcess->Open(_id)){
 			LOG_DEBUG("Couldn't open a process [ id: ", _id, " ]");
 
 			// To display information about fault
@@ -225,12 +240,10 @@ void OpenProcessById()
 	*	pIncomingData - takes pointer which is returned by incoming_data
 	*/
 
-	TCHAR * pIncomingData;
-	pIncomingData = NULL;
+	TCHAR * pIncomingData = nullptr;
 
 	INT _id;
-	TCHAR * szHelpingInfo;
-	szHelpingInfo = NULL;
+	TCHAR * szHelpingInfo = nullptr;
 
 	do {
 		_id = 0;
@@ -239,7 +252,7 @@ void OpenProcessById()
 		printUpdate(szHelpingInfo);
 
 		// Cleaning
-		if (szHelpingInfo != NULL) {
+		if (szHelpingInfo != nullptr) {
 			delete[] szHelpingInfo;
 			szHelpingInfo = NULL;
 		}
@@ -253,7 +266,7 @@ void OpenProcessById()
 		pIncomingData = incoming_data("Input a process name (-1 to go back)", "-?[0-9]+");
 
 		// have read a data
-		if (pIncomingData != NULL) {
+		if (pIncomingData != nullptr) {
 			_id = atoi(pIncomingData);
 
 			// can't open a process by id
@@ -270,7 +283,7 @@ void OpenProcessById()
 		}
 	} while (_id < 1 && _id != -1);
 
-	if (szHelpingInfo != NULL) {
+	if (szHelpingInfo != nullptr) {
 		delete[] szHelpingInfo;
 	}
 }
@@ -293,18 +306,18 @@ void printUpdate(TCHAR * helpingString){
 	cout << "6. Exit the process" << endl << endl;
 	cout << "0. Exit Program" << endl << endl;
 
-	// If we want to display helping information
+	/* displays helping information if need to */
 #ifdef USE_STRING_INSTEADOF_TCHAR
 	if (helpingString.length())
 #else
-	if (helpingString != NULL)
+	if (helpingString != nullptr)
 #endif
 		cout << helpingString << endl << endl;
 
 	cout << (gScaner == read_action ? "Action: " : (gScaner == read_id ? "Input a process name (-1 to go back): " : "Press any key to continue..."));
 }
 
-//	function is called when the process exit
+/* function is called when the process exits */
 void OnProcessExited(Process const* process)
 {
 	EnterCriticalSection(&g_coutAccess);
@@ -312,7 +325,7 @@ void OnProcessExited(Process const* process)
 	LeaveCriticalSection(&g_coutAccess);
 }
 
-//	function is called when the process start
+/* function is called when the process starts */
 void OnProcessStarted(Process const* process)
 {
 	EnterCriticalSection(&g_coutAccess);
@@ -320,14 +333,14 @@ void OnProcessStarted(Process const* process)
 #ifdef USE_STRING_INSTEADOF_TCHAR
 	printUpdate(string(""));
 #else
-	printUpdate(NULL);
+	printUpdate(nullptr);
 #endif
 	LOG("Process [ id: ", process->getId(), " | name: ", getStringByPointer(process->getProcessName()), "] started!");
 
 	LeaveCriticalSection(&g_coutAccess);
 }
 
-//	function is called when the process restart
+/* function is called when the process restarts */
 void OnProcessRestart(Process const* process)
 {
 	EnterCriticalSection(&g_coutAccess);
@@ -335,14 +348,14 @@ void OnProcessRestart(Process const* process)
 #ifdef USE_STRING_INSTEADOF_TCHAR
 	printUpdate(string(""));
 #else
-	printUpdate(NULL);
+	printUpdate(nullptr);
 #endif
 	LOG("process [ id: ", process->getId(), " | name: ", getStringByPointer(process->getProcessName()), "] is restarting!");
 
 	LeaveCriticalSection(&g_coutAccess);
 }
 
-//	function is called when the process is stopped
+/* function is called when the process is stopped */
 void OnProcessStopped(Process const* process)
 {
 	EnterCriticalSection(&g_coutAccess);
@@ -350,7 +363,7 @@ void OnProcessStopped(Process const* process)
 	LeaveCriticalSection(&g_coutAccess);
 }
 
-//	function is called when the process is resumed
+/* function is called when the process is resumed */
 void OnProcessResumed(Process const* process)
 {
 	EnterCriticalSection(&g_coutAccess);
