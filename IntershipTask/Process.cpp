@@ -79,15 +79,15 @@ BOOL Process::Open(DWORD _id)
 		hProcess = lhProcess;
 		hThread = GetThreadByID(_id);
 
-		// Register new 'exit' callback for new process
+		/* register new 'exit' callback for new process */
 		RegisterExitCallback(exitCallback);
 
-		// Remember the command line of the process
+		/* get the command line of the process */
 		szCmdLine = GetCommandLine(hProcess);
 
-		id = _id;	// Save the process id
+		id = _id;
 
-		// Call 'process started'
+		/* call 'process started' */
 		OnStarted();
 
 		return TRUE;
@@ -106,7 +106,7 @@ BOOL Process::Resume()
 	return FALSE;
 }
 
-/* stopss the process */
+/* stops the process */
 BOOL Process::Stop()
 {
 	if (SuspendThread(hThread) < 1){
@@ -125,7 +125,8 @@ BOOL Process::Destroy() {
 	/* unregister wait */
 	if (hWait != nullptr)
 	{
-		::UnregisterWaitEx(hWait, INVALID_HANDLE_VALUE);	// INVALID_HANDLE_VALUE means "Wait for pending callbacks"
+		/* INVALID_HANDLE_VALUE means "Wait for pending callbacks" */
+		::UnregisterWaitEx(hWait, INVALID_HANDLE_VALUE);
 		hWait = nullptr;
 	}
 
