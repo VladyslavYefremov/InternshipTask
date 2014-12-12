@@ -8,6 +8,7 @@ Process::Process() : hProcess(nullptr),
 					startCallback(nullptr),
 					restartCallback(nullptr),
 					resumedCallback(nullptr),
+					szCmdLine(nullptr),
 					id(0){}
 
 Process::Process(TCHAR * _szCmdLine) : hProcess(nullptr),
@@ -18,6 +19,7 @@ Process::Process(TCHAR * _szCmdLine) : hProcess(nullptr),
 					startCallback(nullptr),
 					restartCallback(nullptr),
 					resumedCallback(nullptr),
+					szCmdLine(nullptr),
 					id(0)
 {
 	Create(_szCmdLine);
@@ -26,7 +28,7 @@ Process::Process(TCHAR * _szCmdLine) : hProcess(nullptr),
 /* destructor */
 Process::~Process()
 {
-	DestroyProcess();
+	Destroy();
 }
 
 /* function creates new process using command line */
@@ -54,9 +56,7 @@ BOOL Process::Create(TCHAR * _szCmdLine)
 		hThread = pi.hThread;	// Save the thread handle	
 		id = pi.dwProcessId;	// Save the process id
 
-		/* remember the command line of the process */
-		szCmdLine = new TCHAR[strlen(_szCmdLine) + 1];
-		strcpy_s(szCmdLine, strlen(szCmdLine) + 1, _szCmdLine);
+		szCmdLine = GetCommandLine(hProcess);
 
 		/* calls 'process started' */
 		OnStarted();
@@ -73,8 +73,8 @@ BOOL Process::Open(DWORD _id)
 
 	if (lhProcess != nullptr)
 	{
-		if (hProcess)
-			DestroyProcess();
+		if (hProcess != nullptr)
+			Destroy();
 
 		hProcess = lhProcess;
 		hThread = GetThreadByID(_id);
@@ -117,19 +117,19 @@ BOOL Process::Stop()
 }
 
 /* destroys the process */
-BOOL Process::DestroyProcess() {
-	if (hThread) {
+BOOL Process::Destroy() {
+	if (hThread != nullptr) {
 		CloseHandle(hThread);
 	}
 
 	/* unregister wait */
-	if (hWait)
+	if (hWait != nullptr)
 	{
 		::UnregisterWaitEx(hWait, INVALID_HANDLE_VALUE);	// INVALID_HANDLE_VALUE means "Wait for pending callbacks"
-		hWait = NULL;
+		hWait = nullptr;
 	}
 
-	if (hProcess)
+	if (hProcess != nullptr)
 	{
 		/* 
 		*	Call 'process exited'
@@ -146,6 +146,11 @@ BOOL Process::DestroyProcess() {
 			}
 		}
 		CloseHandle(hProcess);
+	}
+
+	if (szCmdLine != nullptr) {
+		delete[] szCmdLine;
+		szCmdLine = nullptr;
 	}
 
 	id = NULL;
@@ -171,7 +176,7 @@ BOOL Process::Restart()
 	strcpy_s(buffer, iLen + 1, szCmdLine);
 
 	/* destroy current process */
-	DestroyProcess();
+	Destroy();
 
 	/* if we have the command line, create new process */
 	if (iLen){

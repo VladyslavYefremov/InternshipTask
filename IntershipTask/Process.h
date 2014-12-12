@@ -29,7 +29,7 @@ public:
 	BOOL Stop();
 	BOOL Resume();
 	BOOL Restart();
-	BOOL DestroyProcess();
+	BOOL Destroy();
 
 	BOOL RegisterExitCallback(ProcessCallback);
 	BOOL RegisterStartedCallback(ProcessCallback);

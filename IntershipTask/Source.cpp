@@ -179,7 +179,7 @@ INT main(INT argc, TCHAR ** argv)
 
 		case 6:
 			/* destroy the process */
-			gCurrentProcess->DestroyProcess();
+			gCurrentProcess->Destroy();
 			break;
 
 		default:
