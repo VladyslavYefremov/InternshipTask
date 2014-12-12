@@ -130,10 +130,10 @@ TCHAR * GetNameByHandle(HANDLE hProcess)
 		HMODULE hMod;
 		DWORD cbNeeded;
 
-		/* 4etrieves information about the process. */
+		/* retrieves information about the process. */
 		if (EnumProcessModules(hProcess, &hMod, sizeof(hMod), &cbNeeded))
 		{
-			/* Retrieves the base name of the module. */
+			/* retrieves the base name of the module. */
 			GetModuleBaseName(hProcess, hMod, szProcessName, MAX_PATH);
 		}
 	}
