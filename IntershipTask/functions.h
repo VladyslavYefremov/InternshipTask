@@ -5,6 +5,7 @@
 #include <tlhelp32.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <psapi.h>
 #include <regex>
 
@@ -16,8 +17,6 @@
 #define _ARRAY_SIZE_1	2
 #define _ARRAY_SIZE_2	4
 
-using namespace std;
-
 /*
 *	string getStringByPointer (TCHAR * )
 *	
@@ -26,15 +25,17 @@ using namespace std;
 *
 *	function takes a TCHAR pointer, copies _str to ret , and deallocates the memory block pointed by _str.
 */
-string getStringByPointer(TCHAR * _str){
+#ifndef USE_STRING_INSTEADOF_TCHAR
+std::string getStringByPointer(TCHAR * _str){
 	if (_str == nullptr)	
-		return string("undefined");
+		return std::string("undefined");
 
-	string ret = string(_str);
+	std::string ret = std::string(_str);
 	delete[] _str;
 
 	return ret;
 }
+#endif
 
 /* a standard 32-bit datatype for system-supplied status code values. */
 typedef NTSTATUS(NTAPI *_NtQueryInformationProcess)(
@@ -121,7 +122,7 @@ TCHAR * GetCommandLine(HANDLE hProcess){
 }
 
 /* function returns the name of the process using handle */
-TCHAR * GetNameByHandle(HANDLE hProcess)
+std::string GetNameByHandle(HANDLE hProcess)
 {
 	TCHAR szProcessName[MAX_PATH] = TEXT("cannot get");
 
@@ -137,12 +138,7 @@ TCHAR * GetNameByHandle(HANDLE hProcess)
 			GetModuleBaseName(hProcess, hMod, szProcessName, MAX_PATH);
 		}
 	}
-
-	/* szBuffer stays allocated, and will be returned to the caller (to be deallocated later) */
-	TCHAR * szBuffer = new TCHAR[strlen(szProcessName) + 1];
-	sprintf_s(szBuffer, strlen(szProcessName) + 1, "%s", szProcessName);
-
-	return szBuffer;
+	return std::string(szProcessName);
 }
 
 /* function returns the thread of the process by its id */
@@ -180,23 +176,23 @@ HANDLE GetThreadByID(DWORD processId)
 *	pattern:	regular expression
 */
 #ifdef USE_STRING_INSTEADOF_TCHAR
-string incoming_data(TCHAR* info, TCHAR* pattern)
+std::string incoming_data(TCHAR* info, TCHAR* pattern)
 {
 	BOOL is_correct = FALSE, is_first = TRUE;
 
-	regex rx(pattern);
-	string sBuffer;
+	std::regex rx(pattern);
+	std::string sBuffer;
 
 	do {
 		if (!is_first)
-			cout << endl << info << ": ";
+			std::cout << std::endl << info << ": ";
 
-		cin >> sBuffer;
+		std::cin >> sBuffer;
 		is_correct = TRUE;
 
 		/* check the correctness of the entering data */
 		if (!regex_match(sBuffer, rx)) {
-			cout << endl << "Incorrect value! Try again!";
+			std::cout << std::endl << "Incorrect value! Try again!";
 			is_correct = FALSE;
 		}
 
@@ -241,9 +237,9 @@ TCHAR * incoming_data(TCHAR* info, TCHAR* pattern)
 #endif
 
 /* overload of displaying an object (Process) */
-ostream & operator<<(ostream & stream, const Process * Obj)
+std::ostream & operator<<(std::ostream & stream, const Process * Obj)
 {
-	string strData[_ARRAY_SIZE_1][_ARRAY_SIZE_2];
+	std::string strData[_ARRAY_SIZE_1][_ARRAY_SIZE_2];
 	TCHAR buffer[SIZE];
 
 	/* despite the fact that this overload is friend-function, I use public methods to get variables */
@@ -268,42 +264,42 @@ ostream & operator<<(ostream & stream, const Process * Obj)
 	int iState = Obj->getState();
 
 	strData[1][2] = (iState == PROC_WORKING ? "is working" : (iState == PROC_RESTARTING ? "is restarting" : (iState == PROC_STOPPED ? "is stopped" : "undefined")));
-	strData[1][3] = getStringByPointer(Obj->getProcessName());
+	strData[1][3] = Obj->getProcessName();
 
 	for (unsigned int i = 0; i < _ARRAY_SIZE_2; i++){
 		iLengths[i] = max(iLengths[i], strData[1][i].length());
 	}
 
 	/* top of the table */
-	stream << TOP_L << setfill(HORIZONTAL) << setw(iLengths[0]) << "" << 
-		TOP_C << setfill(HORIZONTAL) << setw(iLengths[1]) << "" << 
-		TOP_C << setfill(HORIZONTAL) << setw(iLengths[2]) << "" << 
-		TOP_C << setfill(HORIZONTAL) << setw(iLengths[3]) << "" << 
-		TOP_R << endl;
+	stream << TOP_L << std::setfill(HORIZONTAL) << std::setw(iLengths[0]) << "" <<
+		TOP_C << std::setfill(HORIZONTAL) << std::setw(iLengths[1]) << "" <<
+		TOP_C << std::setfill(HORIZONTAL) << std::setw(iLengths[2]) << "" <<
+		TOP_C << std::setfill(HORIZONTAL) << std::setw(iLengths[3]) << "" <<
+		TOP_R << std::endl;
 	/* outputs title */
-	stream << VERTICAL << setfill(' ') << setw(iLengths[0]) << strData[0][0] <<
-		VERTICAL << setfill(' ') << setw(iLengths[1]) << strData[0][1] <<
-		VERTICAL << setfill(' ') << setw(iLengths[2]) << strData[0][2] <<
-		VERTICAL << setfill(' ') << setw(iLengths[3]) << strData[0][3] <<
-		VERTICAL << endl;
+	stream << VERTICAL << std::setfill(' ') << std::setw(iLengths[0]) << strData[0][0] <<
+		VERTICAL << std::setfill(' ') << std::setw(iLengths[1]) << strData[0][1] <<
+		VERTICAL << std::setfill(' ') << std::setw(iLengths[2]) << strData[0][2] <<
+		VERTICAL << std::setfill(' ') << std::setw(iLengths[3]) << strData[0][3] <<
+		VERTICAL << std::endl;
 	/* center of the table */
-	stream << CENTER_L << setfill(HORIZONTAL) << setw(iLengths[0]) << "" <<
-		CENTER_C << setfill(HORIZONTAL) << setw(iLengths[1]) << "" <<
-		CENTER_C << setfill(HORIZONTAL) << setw(iLengths[2]) << "" <<
-		CENTER_C << setfill(HORIZONTAL) << setw(iLengths[3]) << "" <<
-		CENTER_R << endl;
+	stream << CENTER_L << std::setfill(HORIZONTAL) << std::setw(iLengths[0]) << "" <<
+		CENTER_C << std::setfill(HORIZONTAL) << std::setw(iLengths[1]) << "" <<
+		CENTER_C << std::setfill(HORIZONTAL) << std::setw(iLengths[2]) << "" <<
+		CENTER_C << std::setfill(HORIZONTAL) << std::setw(iLengths[3]) << "" <<
+		CENTER_R << std::endl;
 	/* outputs the data */
-	stream << VERTICAL << setfill(' ') << setw(iLengths[0]) << strData[1][0] <<
-		VERTICAL << setfill(' ') << setw(iLengths[1]) << strData[1][1] <<
-		VERTICAL << setfill(' ') << setw(iLengths[2]) << strData[1][2] << 
-		VERTICAL << setfill(' ') << setw(iLengths[3]) << strData[1][3] <<
-		VERTICAL << endl;
+	stream << VERTICAL << std::setfill(' ') << std::setw(iLengths[0]) << strData[1][0] <<
+		VERTICAL << std::setfill(' ') << std::setw(iLengths[1]) << strData[1][1] <<
+		VERTICAL << std::setfill(' ') << std::setw(iLengths[2]) << strData[1][2] <<
+		VERTICAL << std::setfill(' ') << std::setw(iLengths[3]) << strData[1][3] <<
+		VERTICAL << std::endl;
 	/* bottom of the table */
-	stream << BOTTOM_L << setfill(HORIZONTAL) << setw(iLengths[0]) << "" <<
-		BOTTOM_C << setfill(HORIZONTAL) << setw(iLengths[1]) << "" <<
-		BOTTOM_C << setfill(HORIZONTAL) << setw(iLengths[2]) << "" <<
-		BOTTOM_C << setfill(HORIZONTAL) << setw(iLengths[3]) << "" <<
-		BOTTOM_R << endl;
+	stream << BOTTOM_L << std::setfill(HORIZONTAL) << std::setw(iLengths[0]) << "" <<
+		BOTTOM_C << std::setfill(HORIZONTAL) << std::setw(iLengths[1]) << "" <<
+		BOTTOM_C << std::setfill(HORIZONTAL) << std::setw(iLengths[2]) << "" <<
+		BOTTOM_C << std::setfill(HORIZONTAL) << std::setw(iLengths[3]) << "" <<
+		BOTTOM_R << std::endl;
 
 	return stream;
 }

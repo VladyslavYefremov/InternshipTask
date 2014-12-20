@@ -23,8 +23,6 @@
 #define ENABLE_LOGGING
 #include "logger.h"
 
-using namespace std;
-
 void OnProcessExited(Process const*);
 void OnProcessStarted(Process const*);
 void OnProcessRestart(Process const*);
@@ -33,7 +31,7 @@ void OnProcessResumed(Process const*);
 void OpenProcessById();
 
 #ifdef USE_STRING_INSTEADOF_TCHAR
-void printUpdate(string);
+void printUpdate(std::string);
 #else
 void printUpdate(TCHAR *);
 #endif
@@ -121,7 +119,7 @@ INT main(INT argc, TCHAR ** argv)
 
 		/* updates console window */
 #ifdef USE_STRING_INSTEADOF_TCHAR
-		printUpdate(string(""));
+		printUpdate(std::string(""));
 #else
 		printUpdate(NULL);
 #endif
@@ -166,8 +164,8 @@ INT main(INT argc, TCHAR ** argv)
 			*	gScaner = system_pause - wait for key pressed (in case menu updated)
 			*/
 			system("CLS");
-			cout << gCurrentProcess << endl;
-			cout << "Command Line of this process:" << endl << gCurrentProcess->getCommandLine() << endl << endl;
+			std::cout << gCurrentProcess << std::endl;
+			std::cout << "Command Line of this process:" << std::endl << gCurrentProcess->getCommandLine() << std::endl << std::endl;
 			gScaner = system_pause;
 			system("pause");
 			break;
@@ -205,7 +203,7 @@ void OpenProcessById()
 	*/
 
 	INT _id;
-	string sHelpingInfo;
+	std::string sHelpingInfo;
 
 	do {
 		_id = 0;
@@ -223,7 +221,7 @@ void OpenProcessById()
 			LOG_DEBUG("Couldn't open a process [ id: ", _id, " ]");
 
 			// To display information about fault
-			ostringstream stringStream;
+			std::ostringstream stringStream;
 			stringStream << "Couldn't open a process [ id: " << _id << " ]";
 			sHelpingInfo = stringStream.str();
 
@@ -290,21 +288,21 @@ void OpenProcessById()
 #endif
 
 #ifdef USE_STRING_INSTEADOF_TCHAR
-void printUpdate(string helpingString){
+void printUpdate(std::string helpingString){
 #else
 void printUpdate(TCHAR * helpingString){
 #endif
 	system("CLS");
 
-	cout << gCurrentProcess << endl << endl;
+	std::cout << gCurrentProcess << std::endl << std::endl;
 
-	cout << "1. Stop the process" << endl;
-	cout << "2. Resume the process" << endl;
-	cout << "3. Restart the process" << endl;
-	cout << "4. Get process Command Line" << endl;
-	cout << "5. Watch another process" << endl;
-	cout << "6. Exit the process" << endl << endl;
-	cout << "0. Exit Program" << endl << endl;
+	std::cout << "1. Stop the process" << std::endl;
+	std::cout << "2. Resume the process" << std::endl;
+	std::cout << "3. Restart the process" << std::endl;
+	std::cout << "4. Get process Command Line" << std::endl;
+	std::cout << "5. Watch another process" << std::endl;
+	std::cout << "6. Exit the process" << std::endl << std::endl;
+	std::cout << "0. Exit Program" << std::endl << std::endl;
 
 	/* displays helping information if need to */
 #ifdef USE_STRING_INSTEADOF_TCHAR
@@ -312,9 +310,9 @@ void printUpdate(TCHAR * helpingString){
 #else
 	if (helpingString != nullptr)
 #endif
-		cout << helpingString << endl << endl;
+		std::cout << helpingString << std::endl << std::endl;
 
-	cout << (gScaner == read_action ? "Action: " : (gScaner == read_id ? "Input a process name (-1 to go back): " : "Press any key to continue..."));
+	std::cout << (gScaner == read_action ? "Action: " : (gScaner == read_id ? "Input a process name (-1 to go back): " : "Press any key to continue..."));
 }
 
 /* function is called when the process exits */
@@ -331,11 +329,11 @@ void OnProcessStarted(Process const* process)
 	EnterCriticalSection(&g_coutAccess);
 
 #ifdef USE_STRING_INSTEADOF_TCHAR
-	printUpdate(string(""));
+	printUpdate(std::string(""));
 #else
 	printUpdate(nullptr);
 #endif
-	LOG("Process [ id: ", process->getId(), " | name: ", getStringByPointer(process->getProcessName()), "] started!");
+	LOG("Process [ id: ", process->getId(), " | name: ", process->getProcessName(), "] started!");
 
 	LeaveCriticalSection(&g_coutAccess);
 }
@@ -346,12 +344,11 @@ void OnProcessRestart(Process const* process)
 	EnterCriticalSection(&g_coutAccess);
 
 #ifdef USE_STRING_INSTEADOF_TCHAR
-	printUpdate(string(""));
+	printUpdate(std::string(""));
 #else
 	printUpdate(nullptr);
 #endif
-	LOG("process [ id: ", process->getId(), " | name: ", getStringByPointer(process->getProcessName()), "] is restarting!");
-
+	LOG("process [ id: ", process->getId(), " | name: ", process->getProcessName(), "] is restarting!");
 	LeaveCriticalSection(&g_coutAccess);
 }
 
@@ -359,7 +356,7 @@ void OnProcessRestart(Process const* process)
 void OnProcessStopped(Process const* process)
 {
 	EnterCriticalSection(&g_coutAccess);
-	LOG("Process [ id: ", process->getId(), " | name: ", getStringByPointer(process->getProcessName()), "] has been suspended!");
+	LOG("Process [ id: ", process->getId(), " | name: ", process->getProcessName(), "] has been suspended!");
 	LeaveCriticalSection(&g_coutAccess);
 }
 
@@ -367,6 +364,6 @@ void OnProcessStopped(Process const* process)
 void OnProcessResumed(Process const* process)
 {
 	EnterCriticalSection(&g_coutAccess);
-	LOG("Process [ id: ", process->getId(), " | name: ", getStringByPointer(process->getProcessName()), "] has been resumed!");
+	LOG("Process [ id: ", process->getId(), " | name: ", process->getProcessName(), "] has been resumed!");
 	LeaveCriticalSection(&g_coutAccess);
 }

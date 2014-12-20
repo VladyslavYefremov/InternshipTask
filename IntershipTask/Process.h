@@ -7,17 +7,15 @@
 
 #include "properties.h"
 
-using namespace std;
-
 TCHAR * GetCommandLine(HANDLE);
-TCHAR * GetNameByHandle(HANDLE);
 HANDLE	GetThreadByID(DWORD);
+std::string GetNameByHandle(HANDLE);
 
 class Process
 {
 public:
 	typedef void(*ProcessCallback)(Process const*);
-	friend ostream & operator<<(ostream &, const Process *);
+	friend std::ostream & operator<<(std::ostream &, const Process *);
 
 	Process();
 	Process(TCHAR *);
@@ -41,7 +39,7 @@ public:
 	BYTE	getState()			const;
 	HANDLE	getHandle()			const;
 	TCHAR *	getCommandLine()	const;
-	TCHAR * getProcessName()	const;
+	std::string getProcessName()	const;
 
 private:
 

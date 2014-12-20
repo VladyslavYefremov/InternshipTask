@@ -146,12 +146,12 @@ namespace logging {
 		struct tm * currentTime = new tm;
 		localtime_s(currentTime, &t);
 
-		stringStream << setfill('0') << setw(2) << currentTime->tm_mon + 1
-			<< "/" << setfill('0') << setw(2) << currentTime->tm_mday
+		stringStream << std::setfill('0') << std::setw(2) << currentTime->tm_mon + 1
+			<< "/" << std::setfill('0') << std::setw(2) << currentTime->tm_mday
 			<< "/" << currentTime->tm_year + 1900
-			<< " - " << setfill('0') << setw(2) << currentTime->tm_hour
-			<< ":" << setfill('0') << setw(2) << currentTime->tm_min
-			<< ":" << setfill('0') << setw(2) << currentTime->tm_sec;
+			<< " - " << std::setfill('0') << std::setw(2) << currentTime->tm_hour
+			<< ":" << std::setfill('0') << std::setw(2) << currentTime->tm_min
+			<< ":" << std::setfill('0') << std::setw(2) << currentTime->tm_sec;
 
 		return stringStream.str();
 	}

@@ -276,12 +276,12 @@ TCHAR *	Process::getCommandLine()		const
 }
 
 /* function returns pointer to the name of the process (if it exists. else - nullptr) */
-TCHAR *	Process::getProcessName()		const
+std::string Process::getProcessName()	const
 {
 	if (hProcess != nullptr)
 		return GetNameByHandle(hProcess);
 
-	return nullptr;
+	return std::string("unknown");
 }
 
 /*
