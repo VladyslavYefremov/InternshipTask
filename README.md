@@ -1,5 +1,5 @@
 <h2>General info</h2>
-• Language – ++11.<br>
+• Language – C++11.<br>
 • IDE&Compiler– MS Visual Studio 2012+.<br>
 • OS – Windows 8+.<br>
 • Don’t use additional libraries. Task can be accomplished using only std
